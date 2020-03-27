@@ -1,15 +1,19 @@
 const express = require('express')
 const compression = require('compression')
+import render from 'preact-render-to-string'
+import { html } from 'htm/preact' // use the provided preact binding
 
 const app = express() // create the express app
 app.use(compression()) // use gzip for all requests
+
+const body = render(html`<h1>Hello from Preact</h1>`)
 
 // some basic html to show
 const layout =`
   <!DOCTYPE html>
   <html>
     <body>
-      <h1>Hello!!!</h1>
+      ${body}
     </body>
   </html>
 `

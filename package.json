@@ -13,7 +13,10 @@
   "license": "ISC",
   "dependencies": {
     "compression": "^1.7.4",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "htm": "^3.0.3",
+    "preact": "^10.3.4",
+    "preact-render-to-string": "^5.1.4"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^7.1.1",
