@@ -8,5 +8,14 @@ export default [
       format: 'cjs',
     },
     plugins: [resolve()],
-  }
+  },
+  {
+    input: 'src/client.js',
+    output: {
+      file: 'build/client.js',
+      format: 'es',
+      name: 'client',
+    },
+    plugins: [resolve()],
+  },
 ]
