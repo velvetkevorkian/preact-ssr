@@ -1,4 +1,4 @@
-# Build a SSR Preact app from scratch
+# Build a server-rendered Preact app from scratch
 
 In this tutorial, we're going to build a simple server-rendered [Preact](https://preactjs.com/) app, with client-side hydration. We'll start by serving plain HTML with [Express](https://expressjs.com/), then build up some components using Preact and [HTM](https://github.com/developit/htm). After that, we'll add some interactivity by *hydrating* our components, matching up the server rendered HTML with what the client-side framework thinks it should be. Along the way we'll have some fun (?) with build tools like [Nodemon](https://nodemon.io/), [Rollup](https://rollupjs.org/guide/en/), and NPM scripts.
 
@@ -6,7 +6,7 @@ None of the individual parts of this are (relatively speaking) that complex, but
 
 ## Why server rendered? Why Preact?
 
-Basically, it's fast. Sending as much as you can via HTML means less work to do on the client to make it work; using a lightweight framework like Preact means you're sending less JavaScript on the wire, which translates to a faster user experience, especially on slower devices (i.e. most Android phones - start with [this article by Alex Russell](https://infrequently.org/2017/10/can-you-afford-it-real-world-web-performance-budgets/) if you want to delve into the numbers). For content-heavy sites, it's almost invariably better to get as much of your content onscreen in HTML as quickly as possible.
+Basically, it's fast. Sending as much as you can via HTML means less work to do on the client to make it work; using a lightweight framework like Preact means you're sending less JavaScript on the wire, which translates to a faster user experience, especially on slower devices (i.e. most Android phones - start with [this article by Alex Russell](https://infrequently.org/2017/10/can-you-afford-it-real-world-web-performance-budgets/) if you want to delve into the numbers). For content-heavy sites, it's almost invariably better to get as much of your content onscreen in HTML as quickly as possible. A lot of JavaScript framework SSR approaches involve building a single-page app then hacking in server rendering, but we're going to start with plain HTML and try to progressively enhance it.
 
 It's also a good exercise in seeing what's going on under the hood -- in my day job I work on a moderately complex [React/Next.js](https://nextjs.org/) application, and there's a lot of magic that goes on under the surface. Understanding what your tools are doing for you is always useful.
 
