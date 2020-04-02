@@ -87,7 +87,7 @@ Nodemon is a tool that listens for changes to specified files and restarts the N
 $ npm install nodemon --save-dev
 ```
 
-We'll add an NPM script so we don't have to remember the right incantation every time. You can do this all via the CLI if you like, In the `"scripts"` block of your `package.json`, let's add a new entry.
+We'll add an NPM script so we don't have to remember the right incantation every time. You can do this all via the CLI if you like, but let's automate as much as we can. In the `"scripts"` block of your `package.json`, let's add a new entry.
 
 ```
 "scripts": {
@@ -97,7 +97,7 @@ We'll add an NPM script so we don't have to remember the right incantation every
 This translates roughly to "run `node src/server.js`, but also watch `src/server.js` and rerun the command whenever you see that file has changed".
 
 You should now be able to start the app using `npm run nodemon`, change some text in the `<h1>` and refresh to see it in the browser immediately.
-Your repo should look something like [the demo at this point](https://github.com/velvetkevorkian/preact-ssr/tree/cba6cfd70be46be97145fd3035d7ff2b73716d0a).
+All being well, your app should look something like [the demo at this commit](https://github.com/velvetkevorkian/preact-ssr/tree/cba6cfd70be46be97145fd3035d7ff2b73716d0a).
 
 ## Setting up Rollup
 
@@ -107,8 +107,10 @@ First up, we'll install `rollup`, as well as the `node-resolve` plugin.
 ```
 npm install --save-dev rollup @rollup/plugin-node-resolve
 ```
-Next, let's tell Rollup to take our `src/server.js` file and compile it into `build/server.js`. Create a `rollup.config.js` file at the root of your project, like this. Note that we're exporting an array of config objects, as we'll be adding a client bundle soon. I'd also recommend adding the `build` folder to your `.gitignore` file, although it's not mandatory - some people prefer to check in the built files.
+Next, let's tell Rollup to take our `src/server.js` file and compile it into `build/server.js`. Create a `rollup.config.js` file at the root of your project. Note that we're exporting an array of config objects, as we'll be adding a client bundle soon. I'd also recommend adding the `build` folder to your `.gitignore` file, although it's not mandatory - some people prefer to check in the built files.
 ```
+// rollup.config.js
+
 import resolve from '@rollup/plugin-node-resolve'
 
 export default [
@@ -123,7 +125,7 @@ export default [
 ]
 
 ```
-Add another script to the `package.json` for Rollup. This tells Rollup to use the config file we just create, and to watch for changes to imported files and recompile when it sees a change.
+Add another script to the `package.json` for Rollup. This tells Rollup to use the config file we just created, watch for changes to imported files and recompile when it sees a change.
 
 ```
 "rollup": "rollup --config --watch",
@@ -147,13 +149,18 @@ Then we'll add a `start` script that uses it to call both of the scripts we prep
 "start": "npm-run-all --parallel nodemon rollup"
 ```
 
-There were quite a lot of moving parts in there. Again, compare against [the demo repo at this point](https://github.com/velvetkevorkian/preact-ssr/tree/b68f8bb75e2ff4ba003a771a9c6643ff8dcb625a) if something's not working.
+Now you can start both processes with a single command.
+```
+$ npm run start
+```
+
+There were quite a lot of moving parts in there, so compare against [the demo repo at this point](https://github.com/velvetkevorkian/preact-ssr/tree/b68f8bb75e2ff4ba003a771a9c6643ff8dcb625a) if something's not working.
 
 If you have a look at your `build/server.js` file, it should look pretty much like `src/server.js`, but now we're all set up for importing ES6 modules, so let's do that.
 
 ## Using Preact to render to HTML
 
-Time to install some more dependencies. We'll install Preact itself, the Preact server-side renderer, and htm, which lets us use JavaScript's tagged template strings to build up our components (you can also use JSX, but that requires an additional compile step in your build process). If you've used JSX with React or another framework before, you'll probably have to be careful your muscle memory doesn't take over here; the syntax isn't that complicated, but it feels more like EJS (or ERB, for the Rubyists) than JSX sometimes.
+Time to install some more dependencies. We'll install Preact itself, the Preact server-side renderer, and `htm`, which lets us use JavaScript's tagged template strings to build up our components (you can also use [JSX](https://reactjs.org/docs/introducing-jsx.html), but that requires an additional compile step in your build process). If you've used JSX with React or another framework before, you'll probably have to be careful your muscle memory doesn't take over here; the syntax isn't that complicated, but it feels more like [EJS](https://github.com/mde/ejs) (or ERB, for the Rubyists) than JSX sometimes.
 
 ```
 $ npm install preact preact-render-to-string htm
@@ -188,7 +195,7 @@ Refresh your browser and you should see the text from your `body` variable, exce
 
 One of the reasons Preact, React and other JavaScript frameworks are popular is because they make it easy to create small, separate components, then compose those components together to create larger applications. Let's refactor our single `server.js` file into components. We'll then render the whole component tree on the server, before adding the client-side JavaScript to make it interactive.
 
-Create a `src/components` folder, and add `List.js` and `App.js` files to it.
+Create a `src/components` folder, and add `List.js` and `PreactApp.js` files to it.
 
 ```
 $ mkdir src/components
@@ -290,7 +297,7 @@ export default [
     input: 'src/server.js',
     output: {
       file: 'build/server.js',
-      format: 'cjs',
+      format: 'cjs', // CommonJS format for Node
     },
     plugins: [resolve()],
   },
@@ -298,7 +305,7 @@ export default [
     input: 'src/client.js',
     output: {
       file: 'build/client.js',
-      format: 'es',
+      format: 'es', // ES Module format for modern browsers
       name: 'client',
     },
     plugins: [resolve()],
@@ -306,7 +313,7 @@ export default [
 ]
 ```
 
-Now when you run `npm start`, you should see a `client.js` popping into the `build` folder alongside `server.js`.
+Now when you run `npm run start`, you should see a `client.js` popping into the `build` folder alongside `server.js`.
 
 Next, let's tell Express how to serve our client bundle as a static file.
 
@@ -336,7 +343,7 @@ Now when you refresh http://localhost:3000, you have a working, hydrated Preact 
 
 ## Making it interactive
 
-All we need to do now is add some functionality into our `src/components/List.js` component. On the server it gets compiled to HTML, while our client bundle will look out for it and set up the required listeners when it hydrates. We'll add a button to each list item, another item to show how many times they were clicked, and we'll use Preact's `useState` hook to track that data.
+All we need to do now is add some functionality into our `src/components/List.js` component. On the server it gets compiled to HTML, while our client bundle will look out for the matching DOM elements and set up the required listeners when it hydrates. We'll add a button to each list item, another item to show how many times they were clicked, and we'll use Preact's `useState` hook to track that data.
 
 ```
 import { html } from 'htm/preact'
@@ -370,6 +377,6 @@ const List = ({ data }) => { // takes a data prop
 export default List
 ```
 
-You should now have a functional Preact application that still does as much of its work up-front on the server as possible. Again, if you're having issues, try [comparing against the example repo](https://github.com/velvetkevorkian/preact-ssr/commit/172be9630f3c9c01933e8784bc84102e04c3b5c1). Hopefully that is a useful starting point -- there's still a lot of low-hanging fruit that we could build into this, but I'll save that for a future tutorial.
+You should now have a functional Preact application that still does as much of its work up-front on the server as possible. Again, if you're having issues, try [comparing against the example repo](https://github.com/velvetkevorkian/preact-ssr/commit/172be9630f3c9c01933e8784bc84102e04c3b5c1). Hopefully that is a useful starting point - there's still a lot of low-hanging fruit that we could build into this (Things like compiling CSS, minifying our scripts, transpiling JavaScript using Babel, and rendering more complex state), but I'll save those for a future tutorial.
 
 If you have feedback or suggestions, then hit me up [on Twitter](https://twitter.com/k_macquarrie) or [open an issue on the repo](https://github.com/velvetkevorkian/preact-ssr/issues).
