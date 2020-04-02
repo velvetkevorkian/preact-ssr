@@ -1,14 +1,14 @@
 # Build a SSR Preact app from scratch
 
-In this tutorial, we're going to build a simple server-rendered Preact app, with client-side hydration. We'll start by serving plain HTML with Express, then build up some components using Preact and HTM. After that, we'll add some interactivity by hydrating our components on the client. Along the way we'll have some fun (?) with build tools like Nodemon, Rollup, and NPM scripts.
+In this tutorial, we're going to build a simple server-rendered [Preact](https://preactjs.com/) app, with client-side hydration. We'll start by serving plain HTML with [Express](https://expressjs.com/), then build up some components using Preact and [HTM](https://github.com/developit/htm). After that, we'll add some interactivity by *hydrating* our components, matching up the server rendered HTML with what the client-side framework thinks it should be. Along the way we'll have some fun (?) with build tools like [Nodemon](https://nodemon.io/), [Rollup](https://rollupjs.org/guide/en/), and NPM scripts.
 
 None of the individual parts of this are (relatively speaking) that complex, but there are a lot of moving parts here and it can be hard to find an example that puts them all together. This is an intermediate level tutorial though, so I won't be explaining much of the syntax or JavaScript language features. You'll need to be reasonably comfortable with the terminal, NPM and JavaScript basics.
 
 ## Why server rendered? Why Preact?
 
-Basically, it's fast. Sending as much as you can via HTML means less work to do on the client to make it work; using a lightweight framework like Preact means you're sending less JavaScript on the wire, which translates to a faster user experience, especially on slower devices (i.e. most Android phones). For content-heavy sites, it's almost invariably better to get as much of your content onscreen in HTML
+Basically, it's fast. Sending as much as you can via HTML means less work to do on the client to make it work; using a lightweight framework like Preact means you're sending less JavaScript on the wire, which translates to a faster user experience, especially on slower devices (i.e. most Android phones - start with [this article by Alex Russell](https://infrequently.org/2017/10/can-you-afford-it-real-world-web-performance-budgets/) if you want to delve into the numbers). For content-heavy sites, it's almost invariably better to get as much of your content onscreen in HTML as quickly as possible.
 
-It's also a good exercise in seeing what's going on under the hood -- in my day job I work on a moderately complex React/Next.js application, and there's a lot of magic that goes on under the surface. Understanding what your tools are doing for you is invariably useful.
+It's also a good exercise in seeing what's going on under the hood -- in my day job I work on a moderately complex [React/Next.js](https://nextjs.org/) application, and there's a lot of magic that goes on under the surface. Understanding what your tools are doing for you is always useful.
 
 ## Table of contents
 1. [An express app that serves HTML](#an-express-app-that-serves-html)
@@ -75,7 +75,7 @@ Run the app:
 ```
 $ node src/server.js
 ```
-Then visit http://localhost:3000. All being well, you should see the HTML rendered out. Check out the [demo repo at this point](https://github.com/velvetkevorkian/preact-ssr/tree/554ca38b12b44d80ebb9b55e6c5a734fb4602cbe).
+Then visit http://localhost:3000. All being well, you should see the HTML rendered out. Check out the [demo repo at this point](https://github.com/velvetkevorkian/preact-ssr/tree/554ca38b12b44d80ebb9b55e6c5a734fb4602cbe) if you need to check what it should look like.
 
 There is a slight issue here. Try changing the text in the `<h1>` tag and refresh your page. You should see that it doesn't update until you kill your server (using ctrl + c in your terminal) and restart it. That will get annoying fast, so let's take the time now to fix our workflow.
 
@@ -107,7 +107,7 @@ First up, we'll install `rollup`, as well as the `node-resolve` plugin.
 ```
 npm install --save-dev rollup @rollup/plugin-node-resolve
 ```
-Next, let's tell Rollup to take our `src/server.js` file and compile it into `build/server.js`. Create a `rollup.config.js` file at the root of your project, like this. Note that we're exporting an array of config objects, as we'll be adding a client build in soon. I'd also recommend adding the `build` folder to your `.gitignore` file, although it's not mandatory - some people prefer to check in the built files.
+Next, let's tell Rollup to take our `src/server.js` file and compile it into `build/server.js`. Create a `rollup.config.js` file at the root of your project, like this. Note that we're exporting an array of config objects, as we'll be adding a client bundle soon. I'd also recommend adding the `build` folder to your `.gitignore` file, although it's not mandatory - some people prefer to check in the built files.
 ```
 import resolve from '@rollup/plugin-node-resolve'
 
@@ -135,7 +135,7 @@ Update the Nodemon script to use the built file, so it will restart the server e
 "nodemon": "nodemon --watch build/server.js build/server.js"
 ```
 
-Now we have two NPM scripts, `rollup` and `nodemon`, that we want to run in the background. At first glance, you might want to try `$ npm run rollup && npm run nodemon`; that won't work though, as the `rollup` watcher never exits, so the `nodemon` script never starts. We need a way to run them in parallel. Fortunately, there's a package for that. Let's install it.
+Now we have two NPM scripts, `rollup` and `nodemon`, that we want to run in the background. At first glance, you might want to try `$ npm run rollup && npm run nodemon`; that won't work though, as the `rollup` watcher never exits, so the `nodemon` script never starts. We need a way to run them in parallel. You could do this by hand, but fortunately, there's a package for doing it in a single script. Let's install it.
 
 ```
 $ npm install --save-dev npm-run-all
@@ -147,13 +147,13 @@ Then we'll add a `start` script that uses it to call both of the scripts we prep
 "start": "npm-run-all --parallel nodemon rollup"
 ```
 
-There were quite a lot of moving parts in there. Check out [the demo repo at this point](https://github.com/velvetkevorkian/preact-ssr/tree/b68f8bb75e2ff4ba003a771a9c6643ff8dcb625a) if something's not working.
+There were quite a lot of moving parts in there. Again, compare against [the demo repo at this point](https://github.com/velvetkevorkian/preact-ssr/tree/b68f8bb75e2ff4ba003a771a9c6643ff8dcb625a) if something's not working.
 
 If you have a look at your `build/server.js` file, it should look pretty much like `src/server.js`, but now we're all set up for importing ES6 modules, so let's do that.
 
 ## Using Preact to render to HTML
 
-Time to install some more dependencies. We'll install Preact itself, the Preact server-side renderer, and htm, which lets us use JavaScript's tagged template strings to build up our components (you can also use JSX, but that requires an additional compile step in your build process). If you've used JSX with React or another framework before, you'll probably have to be careful your muscle memory doesn't take over here; the syntax isn't that complicated, but it feels more like EJS (or ERB, Rubyists) than JSX sometimes.
+Time to install some more dependencies. We'll install Preact itself, the Preact server-side renderer, and htm, which lets us use JavaScript's tagged template strings to build up our components (you can also use JSX, but that requires an additional compile step in your build process). If you've used JSX with React or another framework before, you'll probably have to be careful your muscle memory doesn't take over here; the syntax isn't that complicated, but it feels more like EJS (or ERB, for the Rubyists) than JSX sometimes.
 
 ```
 $ npm install preact preact-render-to-string htm
@@ -182,7 +182,7 @@ const layout =`
 `
 ```
 
-Refresh your browser and you should see the text from your `body` variable, except now we've rendered it using Preact before turning it into HTML. [Check out the repo at this point](https://github.com/velvetkevorkian/preact-ssr/commit/d775be9941d3d0574c33eedcff60697311159873).
+Refresh your browser and you should see the text from your `body` variable, except now we've rendered it using Preact before turning it into HTML. [Have a look at the repo at this point](https://github.com/velvetkevorkian/preact-ssr/commit/d775be9941d3d0574c33eedcff60697311159873) if not.
 
 ## Components and Composition
 
@@ -242,7 +242,7 @@ const body = render(html`
 `)
 ```
 
-When you refresh, you should see the `<h1>`, followed by the list of data from our `PreactApp` and `List` components. Compare against [the repo at this](https://github.com/velvetkevorkian/preact-ssr/commit/38b201508eadb9df76eeeeff5e26766c9c13d386) point if required.
+When you refresh, you should see the `<h1>`, followed by the list of data from our `PreactApp` and `List` components. Compare against [the repo at this point](https://github.com/velvetkevorkian/preact-ssr/commit/38b201508eadb9df76eeeeff5e26766c9c13d386) if required.
 
 Next up, let's add some interactivity to our `List` component.
 
@@ -308,7 +308,7 @@ export default [
 
 Now when you run `npm start`, you should see a `client.js` popping into the `build` folder alongside `server.js`.
 
-Next, let's tell Express how to serve that file.
+Next, let's tell Express how to serve our client bundle as a static file.
 
 ```
 app.get('/client.js', (request, response) => {
@@ -332,11 +332,11 @@ const layout =`
 `
 ```
 
-Now when you refresh http://localhost:3000, you have a working, hydrated Preact application that does... precisely nothing (if you don't, [have a look at the example repo at this point](https://github.com/velvetkevorkian/preact-ssr/commit/1f328b78aca795471af3b53c7426da9b3097101d)). Let's fix that.
+Now when you refresh http://localhost:3000, you have a working, hydrated Preact application that does... precisely nothing (if you don't, [have a look at the example repo at this stage](https://github.com/velvetkevorkian/preact-ssr/commit/1f328b78aca795471af3b53c7426da9b3097101d)). Let's fix that.
 
 ## Making it interactive
 
-All we need to do now is add some functionality into our `src/components/List.js` component. On the server anything it gets compiled to HTML, while our client bundle will look out for it and set up the required listeners when it hydrates. We'll add a button to each list item, another item to show how many times they were clicked, and we'll use Preact's `useState` hook to track that data.
+All we need to do now is add some functionality into our `src/components/List.js` component. On the server it gets compiled to HTML, while our client bundle will look out for it and set up the required listeners when it hydrates. We'll add a button to each list item, another item to show how many times they were clicked, and we'll use Preact's `useState` hook to track that data.
 
 ```
 import { html } from 'htm/preact'
@@ -370,6 +370,6 @@ const List = ({ data }) => { // takes a data prop
 export default List
 ```
 
-You should now have a functional Preact application that still does as much of its work up-front on the server as possible. Again, if you're having issues, try [comparing against the example repo at this point](https://github.com/velvetkevorkian/preact-ssr/commit/172be9630f3c9c01933e8784bc84102e04c3b5c1). Hopefully that is a useful starting point -- there's still a lot of low-hanging fruit that we could build into this, but I'll save that for a future tutorial.
+You should now have a functional Preact application that still does as much of its work up-front on the server as possible. Again, if you're having issues, try [comparing against the example repo](https://github.com/velvetkevorkian/preact-ssr/commit/172be9630f3c9c01933e8784bc84102e04c3b5c1). Hopefully that is a useful starting point -- there's still a lot of low-hanging fruit that we could build into this, but I'll save that for a future tutorial.
 
 If you have feedback or suggestions, then hit me up [on Twitter](https://twitter.com/k_macquarrie) or [open an issue on the repo](https://github.com/velvetkevorkian/preact-ssr/issues).
