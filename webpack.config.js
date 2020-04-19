@@ -1,8 +1,10 @@
 const nodeExternals = require('webpack-node-externals')
 
+const mode = process.env.NODE_ENV === 'production' ? 'production' : 'development'
+
 const server = {
   target: 'node',
-  mode: 'development',
+  mode,
   externals: [nodeExternals()],
   entry: {
     server: './src/server.js'
@@ -14,7 +16,7 @@ const server = {
 }
 
 const client = {
-  mode: 'development',
+  mode,
   entry: {
     client: './src/client.js',
   },

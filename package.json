@@ -8,7 +8,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "nodemon": "nodemon --watch build/server.js build/server.js",
     "webpack": "webpack --watch",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "build": "NODE_ENV=production webpack",
+    "serve": "node ./build/server.js",
+    "clean": "rm -rf ./build"
   },
   "author": "",
   "license": "ISC",
