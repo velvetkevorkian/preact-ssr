@@ -1,4 +1,7 @@
+import { html } from 'htm/preact'
 import { hydrate } from 'preact'
 import PreactApp from './components/PreactApp'
 
-hydrate(PreactApp(), document.getElementById('root'))
+const app = html`<${PreactApp} />`
+const el = document.getElementById('root')
+hydrate(app, el)
