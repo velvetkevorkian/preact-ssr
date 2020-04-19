@@ -31,7 +31,7 @@ app.get('/', (request, response) => { // listen for requests to the root path
 
 app.get('/client.js', (request, response) => {
   response.sendFile('client.js', {
-    root: __dirname, // this will be the build folder
+    root: './build',
   })
 })
 
