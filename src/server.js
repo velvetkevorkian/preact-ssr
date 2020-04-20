@@ -20,7 +20,7 @@ const layout =`
   <html>
     <body>
       ${body}
-      <script type="module" src="client.js" async></script>
+      <script type="module" src="/public/client.js" async></script>
     </body>
   </html>
 `
@@ -29,10 +29,6 @@ app.get('/', (request, response) => { // listen for requests to the root path
   response.send(layout) // send the HTML string
 })
 
-app.get('/client.js', (request, response) => {
-  response.sendFile('client.js', {
-    root: './build',
-  })
-})
+app.use('/public', express.static('./build/public'))
 
 app.listen(3000) // listen for requests on port 3000

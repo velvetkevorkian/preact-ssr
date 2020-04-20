@@ -22,8 +22,8 @@ const client = {
   },
   output: {
     filename: '[name].js',
-    path: __dirname + '/build'
-  }
+    path: __dirname + '/build/public'
+  },
 }
 
 module.exports = [server, client]
