@@ -1,6 +1,6 @@
 import { html } from 'htm/preact'
 import { useState } from 'preact/hooks'
-import List from './List'
+import List from '../List'
 
 const PreactApp = () => {
   const [dataArray, setDataArray] = useState(['Item 1', 'Item 2', 'Item 3'])
