@@ -4,7 +4,7 @@ const ManifestPlugin = require('webpack-manifest-plugin')
 const isProduction = process.env.NODE_ENV === 'production'
 const mode = isProduction ? 'production' : 'development'
 
-const babelOptions = {
+const babelConfig = ({targets}) => ({
   test: /\.js$/,
   exclude: /node_modules/,
   use: {
@@ -13,9 +13,29 @@ const babelOptions = {
       plugins: [
         ['htm', { import: 'preact' }]
       ],
+      presets: [
+        ['@babel/preset-env', { targets }]
+      ],
+      cacheDirectory: true,
     },
   },
-}
+})
+
+const serverBabelConfig = babelConfig({
+  targets: { node: 'current' }
+})
+const clientBabelConfig = babelConfig({
+  targets: { esmodules: true }
+})
+const legacyBabelConfig = babelConfig({
+  targets: {
+    browsers: [
+      '> 1%',
+      'last 2 versions',
+      'Firefox ESR',
+    ],
+  },
+})
 
 const server = {
   target: 'node',
@@ -30,7 +50,7 @@ const server = {
   },
   module: {
     rules: [
-      babelOptions,
+      serverBabelConfig,
     ],
   },
 }
@@ -47,7 +67,7 @@ const client = {
   },
   module: {
     rules: [
-      babelOptions,
+      clientBabelConfig,
     ],
   },
   plugins: [
@@ -58,4 +78,27 @@ const client = {
   ],
 }
 
-module.exports = [server, client]
+const legacy = {
+  mode,
+  entry: {
+    client: './src/client.js',
+  },
+  output: {
+    // hash the filename in production only
+    filename: isProduction ? '[name]-legacy-[contenthash].js' : '[name]-legacy.js',
+    path: __dirname + '/build/public'
+  },
+  module: {
+    rules: [
+      legacyBabelConfig,
+    ],
+  },
+  plugins: [
+    // generate a manifest for our server to refer to
+    new ManifestPlugin({
+      fileName: '../manifest-legacy.json',
+    }),
+  ],
+}
+
+module.exports = [server, client, legacy]
