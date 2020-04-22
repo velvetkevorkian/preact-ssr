@@ -1,0 +1,11 @@
+.list {
+  border: 1px solid;
+}
+
+.item {
+  padding: 0.5em;
+}
+
+.item + .item {
+  margin-top: 1em;
+}

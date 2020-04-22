@@ -1,6 +1,7 @@
 import { JSDOM } from 'jsdom'
 import { configure } from 'enzyme'
 import Adapter from 'enzyme-adapter-preact-pure'
+import 'ignore-styles'
 
 const dom = new JSDOM('', {
   pretendToBeVisual: true,

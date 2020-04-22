@@ -1,5 +1,6 @@
 const nodeExternals = require('webpack-node-externals')
 const ManifestPlugin = require('webpack-manifest-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 const isProduction = process.env.NODE_ENV === 'production'
 const mode = isProduction ? 'production' : 'development'
@@ -51,6 +52,10 @@ const server = {
   module: {
     rules: [
       serverBabelConfig,
+      { // we're not doing anything with the CSS here, but it stops the import from blowing up
+        test: /\.css$/i,
+        use: ['css-loader'],
+      },
     ],
   },
 }
@@ -68,9 +73,16 @@ const client = {
   module: {
     rules: [
       clientBabelConfig,
+      {
+        test: /\.css$/i,
+        use: [MiniCssExtractPlugin.loader,'css-loader'],
+      },
     ],
   },
   plugins: [
+    new MiniCssExtractPlugin({
+      filename: isProduction ? '[name]-[contenthash].css' : '[name].css',
+    }),
     // generate a manifest for our server to refer to
     new ManifestPlugin({
       fileName: '../manifest-client.json',
@@ -91,6 +103,10 @@ const legacy = {
   module: {
     rules: [
       legacyBabelConfig,
+      { // we're not doing anything with the CSS here, but it stops the import from blowing up
+        test: /\.css$/i,
+        use: ['css-loader'],
+      },
     ],
   },
   plugins: [
@@ -101,4 +117,8 @@ const legacy = {
   ],
 }
 
-module.exports = [server, client, legacy]
+module.exports = [
+  server,
+  client,
+  legacy,
+]

@@ -1,5 +1,6 @@
 import { html } from 'htm/preact'
 import { useState } from 'preact/hooks'
+import './styles.css'
 
 const List = ({ data }) => { // takes a data prop
   // how many clicks have we counted? Default to 0
@@ -11,14 +12,14 @@ const List = ({ data }) => { // takes a data prop
   }
 
   return html`
-    <ul>
+    <ul class="list">
       ${data && data.map(i => html`
-        <li>
+        <li class="item">
           <!-- listen for button clicks -->
           ${i}: <button onClick=${handleClick}>Click me</button>
         </li>
       `)}
-      <li>
+      <li class="item">
         <!-- list how many clicks we've seen, with the right plural -->
         ${count} ${count === 1 ? 'click' : 'clicks'} counted
       </li>

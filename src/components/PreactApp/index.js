@@ -1,6 +1,7 @@
 import { html } from 'htm/preact'
 import { useState } from 'preact/hooks'
 import List from '../List'
+import './styles.css'
 
 const PreactApp = () => {
   const [dataArray, setDataArray] = useState(['Item 1', 'Item 2', 'Item 3'])
@@ -12,7 +13,7 @@ const PreactApp = () => {
 
   return html`
     <${List} data=${dataArray} />
-    <button type="button" onclick=${addItem}>
+    <button class="button" type="button" onclick=${addItem}>
       Add item
     </button>
   `
