@@ -52,9 +52,21 @@ const server = {
   module: {
     rules: [
       serverBabelConfig,
-      { // we're not doing anything with the CSS here, but it stops the import from blowing up
+      {
         test: /\.css$/i,
-        use: ['css-loader'],
+        use: [
+          {
+            loader: 'css-loader',
+            options: {
+              // use CSS modules
+              modules: true,
+              // but only return the classnames when we import a CSS file.
+              // This is required to make the server build work the same as the client
+              // without the extra MiniCssExtractPlugin loader
+              onlyLocals: true,
+            },
+          },
+        ],
       },
     ],
   },
@@ -75,12 +87,23 @@ const client = {
       clientBabelConfig,
       {
         test: /\.css$/i,
-        use: [MiniCssExtractPlugin.loader,'css-loader'],
+        use: [
+          // extract CSS to a file
+          { loader: MiniCssExtractPlugin.loader },
+          {
+            // return a map of CSS module classnames when we import a CSS file
+            loader: 'css-loader',
+            options: {
+              modules: true,
+            },
+          },
+        ],
       },
     ],
   },
   plugins: [
     new MiniCssExtractPlugin({
+      // extract CSS to this file
       filename: isProduction ? '[name]-[contenthash].css' : '[name].css',
     }),
     // generate a manifest for our server to refer to
@@ -105,7 +128,15 @@ const legacy = {
       legacyBabelConfig,
       { // we're not doing anything with the CSS here, but it stops the import from blowing up
         test: /\.css$/i,
-        use: ['css-loader'],
+        use: [
+          {
+            loader: 'css-loader',
+            options: {
+              modules: true,
+              onlyLocals: true,
+            }
+          },
+        ],
       },
     ],
   },

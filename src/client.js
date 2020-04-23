@@ -3,6 +3,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 import { html } from 'htm/preact'
 import { hydrate } from 'preact'
+import './globalStyles.css'
 import PreactApp from './components/PreactApp'
 
 const app = html`<${PreactApp} />`
