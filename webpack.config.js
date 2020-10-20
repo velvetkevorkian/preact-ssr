@@ -25,9 +25,11 @@ const babelConfig = ({targets}) => ({
 const serverBabelConfig = babelConfig({
   targets: { node: 'current' }
 })
+
 const clientBabelConfig = babelConfig({
   targets: { esmodules: true }
 })
+
 const legacyBabelConfig = babelConfig({
   targets: {
     browsers: [
@@ -37,6 +39,17 @@ const legacyBabelConfig = babelConfig({
     ],
   },
 })
+
+const output = {
+  // hash the filename in production only
+  filename: isProduction ? '[name]-[contenthash].js' : '[name].js',
+  path: __dirname + '/build/public'
+}
+
+const manifestPluginOptions = {
+  fileName: '../manifest.json',
+  seed: {},
+}
 
 const server = {
   target: 'node',
@@ -77,11 +90,7 @@ const client = {
   entry: {
     client: './src/client.js',
   },
-  output: {
-    // hash the filename in production only
-    filename: isProduction ? '[name]-[contenthash].js' : '[name].js',
-    path: __dirname + '/build/public'
-  },
+  output,
   module: {
     rules: [
       clientBabelConfig,
@@ -107,22 +116,16 @@ const client = {
       filename: isProduction ? '[name]-[contenthash].css' : '[name].css',
     }),
     // generate a manifest for our server to refer to
-    new ManifestPlugin({
-      fileName: '../manifest-client.json',
-    }),
+    new ManifestPlugin(manifestPluginOptions),
   ],
 }
 
 const legacy = {
   mode,
   entry: {
-    client: './src/client.js',
+    legacy: './src/client.js',
   },
-  output: {
-    // hash the filename in production only
-    filename: isProduction ? '[name]-legacy-[contenthash].js' : '[name]-legacy.js',
-    path: __dirname + '/build/public'
-  },
+  output,
   module: {
     rules: [
       legacyBabelConfig,
@@ -142,9 +145,7 @@ const legacy = {
   },
   plugins: [
     // generate a manifest for our server to refer to
-    new ManifestPlugin({
-      fileName: '../manifest-legacy.json',
-    }),
+    new ManifestPlugin(manifestPluginOptions),
   ],
 }
 
